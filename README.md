@@ -21,6 +21,7 @@ A secure console-based password manager with encryption, password generator, and
 ### Features:
 - 🔒 **Encryption** — Passwords are stored in encrypted form
 - 🔑 **Key-based access** — A unique key is generated on first launch
+- 🗑️ **Delete password** — Remove stored passwords you no longer need
 - 🎲 **Password generator** — Create strong random passwords
 - 📊 **Strength checker** — Evaluate password reliability
 - 💾 **Local storage** — All data stays on your computer
@@ -30,6 +31,7 @@ A secure console-based password manager with encryption, password generator, and
 1. Run the program
 2. Choose an action from the menu:
    - Save a new password
+   - Delete a password
    - View all saved passwords
    - Generate a random password
    - Check password strength
@@ -59,6 +61,10 @@ python password_manager.py
 ### Save Password
 - Enter the app name and password
 - Password is encrypted and saved to `password.txt`
+
+### Delete Password
+- Enter the app name
+- The password entry is permanently removed from the file
 
 ### View Passwords
 - Displays all saved passwords in decrypted form

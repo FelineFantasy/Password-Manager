@@ -27,16 +27,55 @@ def separator():
     print("=" * 50)
 
 
+def clear_console():
+    """Очищает консоль."""
+    os.system("cls" if os.name == "nt" else "clear")
+
+
+def wait_and_clear():
+    """Ждёт пока нажмут enter и очищает консоль."""
+    input("\nДля выхода в меню нажмите enter...")
+    clear_console()
+
+
 def action_save_password():
     """Сохраняет пароль в зашифрованном виде."""
     separator()
     title = input("От какого приложения данный пароль?: ")
     password = input("Введите пароль: ")
     encrypted = cipher.encrypt(password.encode()).decode()
-    with open("password.txt", "a", encoding="utf-8") as f:
-        f.write(f"{title}|{encrypted}\n")
+    try:
+        with open("password.txt", "a", encoding="utf-8") as f:
+            f.write(f"{title}|{encrypted}\n")
+    except FileNotFoundError:
+        print("Файл с паролями не найден")
+        return
     separator()
     print("Пароль сохранён!")
+
+
+def action_delete_password():
+    """Удаляет пароль из файла"""
+    separator()
+    title = input("От какого приложения нужно удалить пароль?: ")
+
+    try:
+        with open("password.txt", "r", encoding="utf-8") as f:
+            lines = f.readlines()
+    except FileNotFoundError:
+        print("Файл с паролями не найден")
+        return
+
+    new_lines = [line for line in lines if not line.startswith(title + "|")]
+
+    if len(new_lines) == len(lines):
+        print(f"Пароль для '{title}' не найден")
+        return
+
+    with open("password.txt", "w", encoding="utf-8") as f:
+        f.writelines(new_lines)
+
+    print("Пароль успешно удалён!")
 
 
 def action_show_password():
@@ -59,6 +98,7 @@ def action_show_password():
     except FileNotFoundError:
         separator()
         print("Файл с паролями не найден")
+        return
 
 
 def action_generate_password():
@@ -105,14 +145,16 @@ def action_check_strength():
 
 def main():
     """Главный цикл программы."""
+    clear_console()
     while True:
-        separator()
         print("Менеджер паролей")
+        separator()
         print("0. Выйти")
         print("1. Сохранить пароль")
-        print("2. Посмотреть пароли")
-        print("3. Сгенерировать пароль")
-        print("4. Проверить стойкость пароля")
+        print("2. Удалить пароль")
+        print("3. Посмотреть пароли")
+        print("4. Сгенерировать пароль")
+        print("5. Проверить стойкость пароля")
         separator()
 
         choice = input("Выберите вариант: ")
@@ -123,13 +165,16 @@ def main():
             case "1":
                 action_save_password()
             case "2":
-                action_show_password()
+                action_delete_password()
             case "3":
-                action_generate_password()
+                action_show_password()
             case "4":
+                action_generate_password()
+            case "5":
                 action_check_strength()
             case _:
                 print("Неверный выбор")
+        wait_and_clear()
 
 
 if __name__ == "__main__":
