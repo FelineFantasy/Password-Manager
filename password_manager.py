@@ -4,27 +4,26 @@ import os
 from cryptography.fernet import Fernet
 
 KEY_FILE = "secret.key"
-
-# Загрузка или генерация ключа шифрования
-if os.path.exists(KEY_FILE):
-    with open(KEY_FILE, "rb") as f:
-        key = f.read()
-else:
-    key = Fernet.generate_key()
-    with open(KEY_FILE, "wb") as f:
-        f.write(key)
-
-cipher = Fernet(key)
-
-# Создание файла для паролей, если он не существует
-if not os.path.exists("password.txt"):
-    with open("password.txt", "w", encoding="utf-8") as f:
-        f.write("")
+PASSWORD_FILE = "password.txt"
 
 
-def separator():
-    """Выводит разделительную линию."""
-    print("=" * 50)
+def get_cipher():
+    """Загружает или создаёт ключ шифрования."""
+    if os.path.exists(KEY_FILE):
+        with open(KEY_FILE, "rb") as f:
+            key = f.read()
+    else:
+        key = Fernet.generate_key()
+        with open(KEY_FILE, "wb") as f:
+            f.write(key)
+    return Fernet(key)
+
+
+def init_password_file():
+    """Создаёт файл для паролей, если он не существует."""
+    if not os.path.exists(PASSWORD_FILE):
+        with open(PASSWORD_FILE, "w", encoding="utf-8") as f:
+            f.write("")
 
 
 def clear_console():
@@ -33,147 +32,254 @@ def clear_console():
 
 
 def wait_and_clear():
-    """Ждёт пока нажмут enter и очищает консоль."""
-    input("\nДля выхода в меню нажмите enter...")
+    """Ожидает нажатия Enter и очищает консоль."""
+    input("\nДля выхода в меню нажмите Enter...")
     clear_console()
 
 
-def action_save_password():
-    """Сохраняет пароль в зашифрованном виде."""
-    separator()
-    title = input("От какого приложения данный пароль?: ")
-    password = input("Введите пароль: ")
-    encrypted = cipher.encrypt(password.encode()).decode()
+def load_passwords():
+    """Загружает все пароли из файла."""
     try:
-        with open("password.txt", "a", encoding="utf-8") as f:
-            f.write(f"{title}|{encrypted}\n")
+        with open(PASSWORD_FILE, "r", encoding="utf-8") as f:
+            return f.readlines()
     except FileNotFoundError:
-        print("Файл с паролями не найден")
-        return
-    separator()
+        return []
+
+
+def save_passwords(lines):
+    """Сохраняет пароли в файл."""
+    with open(PASSWORD_FILE, "w", encoding="utf-8") as f:
+        f.writelines(lines)
+
+
+def get_services_list(lines):
+    """Возвращает список сервисов из строк файла."""
+    services = []
+    for line in lines:
+        try:
+            title = line.strip().split("|")[0]
+            services.append(title)
+        except Exception:
+            pass
+    return services
+
+
+def show_services_menu(lines):
+    """Показывает нумерованный список сервисов."""
+    services = get_services_list(lines)
+    for i, title in enumerate(services, 1):
+        print(f"{i}. {title}")
+    return services
+
+
+def get_user_choice(max_choice):
+    """Получает от пользователя номер выбора."""
+    try:
+        choice = int(input("Введите номер: "))
+        if 1 <= choice <= max_choice:
+            return choice
+        print("Неверный номер")
+    except ValueError:
+        print("Введите число!")
+    return None
+
+
+def generate_random_password(length=12):
+    """Генерирует случайный пароль заданной длины."""
+    chars = string.ascii_letters + string.digits + "!@#$%^&*"
+    return ''.join(random.choices(chars, k=length))
+
+
+def get_password_from_user():
+    """Запрашивает у пользователя пароль (вручную или генерирует)."""
+    print("1. Ввести пароль вручную")
+    print("2. Сгенерировать пароль автоматически")
+    choice = input("Выберите вариант (1 или 2): ").strip()
+
+    if choice == "2":
+        try:
+            length = int(input("Введите длину пароля (по умолчанию 12): ") or "12")
+            password = generate_random_password(length)
+        except ValueError:
+            print("Неверная длина, будет использован пароль длиной 12 символов")
+            password = generate_random_password(12)
+        print(f"Сгенерированный пароль: {password}")
+    else:
+        password = input("Введите пароль: ")
+
+    return password
+
+
+def action_save_password(cipher):
+    """Сохраняет пароль в зашифрованном виде."""
+    print("=" * 50)
+    title = input("От какого приложения данный пароль?: ")
+    password = get_password_from_user()
+
+    encrypted = cipher.encrypt(password.encode()).decode()
+
+    with open(PASSWORD_FILE, "a", encoding="utf-8") as f:
+        f.write(f"{title}|{encrypted}\n")
+
+    print("=" * 50)
     print("Пароль сохранён!")
 
 
+def action_update_password(cipher):
+    """Обновляет существующий пароль."""
+    print("=" * 50)
+    lines = load_passwords()
+
+    if not lines:
+        print("Нет сохранённых паролей")
+        return
+
+    print("Сохранённые сервисы:")
+    services = show_services_menu(lines)
+    choice = get_user_choice(len(services))
+
+    if not choice:
+        return
+
+    old_title = services[choice - 1]
+    old_enc_password = lines[choice - 1].strip().split("|")[1]
+
+    try:
+        old_password = cipher.decrypt(old_enc_password.encode()).decode()
+        print(f"Старый пароль для '{old_title}': {old_password}")
+    except Exception:
+        print("Не удалось расшифровать старый пароль")
+
+    new_password = get_password_from_user()
+    encrypted = cipher.encrypt(new_password.encode()).decode()
+    lines[choice - 1] = f"{old_title}|{encrypted}\n"
+    save_passwords(lines)
+
+    print("=" * 50)
+    print(f"Пароль для '{old_title}' обновлён!")
+
+
 def action_delete_password():
-    """Удаляет пароль из файла"""
-    separator()
-    title = input("От какого приложения нужно удалить пароль?: ")
+    """Удаляет пароль из файла."""
+    print("=" * 50)
+    lines = load_passwords()
 
-    try:
-        with open("password.txt", "r", encoding="utf-8") as f:
-            lines = f.readlines()
-    except FileNotFoundError:
-        print("Файл с паролями не найден")
+    if not lines:
+        print("Нет сохранённых паролей")
         return
 
-    new_lines = [line for line in lines if not line.startswith(title + "|")]
+    print("Сохранённые сервисы:")
+    services = show_services_menu(lines)
+    choice = get_user_choice(len(services))
 
-    if len(new_lines) == len(lines):
-        print(f"Пароль для '{title}' не найден")
+    if not choice:
         return
 
-    with open("password.txt", "w", encoding="utf-8") as f:
-        f.writelines(new_lines)
+    deleted_title = services[choice - 1]
+    del lines[choice - 1]
+    save_passwords(lines)
 
-    print("Пароль успешно удалён!")
+    print("=" * 50)
+    print(f"Пароль для '{deleted_title}' успешно удалён!")
 
 
-def action_show_password():
+def action_show_password(cipher):
     """Показывает все сохранённые пароли."""
-    try:
-        with open("password.txt", "r", encoding="utf-8") as f:
-            lines = f.readlines()
-        if not lines:
-            separator()
-            print("Нет сохранённых паролей")
-            return
-        separator()
-        for i, line in enumerate(lines, 1):
-            try:
-                title, enc_password = line.strip().split("|")
-                decrypted = cipher.decrypt(enc_password.encode()).decode()
-                print(f"{i}. {title}: {decrypted}")
-            except Exception:
-                print(f"{i}. Ошибка: {line.strip()}")
-    except FileNotFoundError:
-        separator()
-        print("Файл с паролями не найден")
+    lines = load_passwords()
+
+    if not lines:
+        print("=" * 50)
+        print("Нет сохранённых паролей")
         return
+
+    print("=" * 50)
+    for i, line in enumerate(lines, 1):
+        try:
+            title, enc_password = line.strip().split("|")
+            decrypted = cipher.decrypt(enc_password.encode()).decode()
+            print(f"{i}. {title}: {decrypted}")
+        except Exception:
+            print(f"{i}. Ошибка: {line.strip()}")
 
 
 def action_generate_password():
     """Генерирует случайный пароль заданной длины."""
-    separator()
-    chars = string.ascii_letters + string.digits + "!@#$%^&*"
+    print("=" * 50)
     try:
         length = int(input("Введите длину пароля: "))
-        result = ''.join(random.choices(chars, k=length))
-        separator()
+        result = generate_random_password(length)
+        print("=" * 50)
         print(f"Результат: {result}")
     except ValueError:
         print("Введите число!")
 
 
+def check_password_strength(password):
+    """Проверяет надёжность пароля и возвращает оценку."""
+    checks = [
+        len(password) >= 8,
+        any(c.isdigit() for c in password),
+        any(c.isupper() for c in password),
+        any(c.islower() for c in password),
+        any(c in "!@#$%^&*" for c in password)
+    ]
+    return sum(checks)
+
+
 def action_check_strength():
     """Проверяет надёжность пароля."""
-    separator()
+    print("=" * 50)
     password = input("Введите пароль: ")
-    score = 0
-    if len(password) >= 8:
-        score += 1
-    if any(c.isdigit() for c in password):
-        score += 1
-    if any(c.isupper() for c in password):
-        score += 1
-    if any(c.islower() for c in password):
-        score += 1
-    if any(c in "!@#$%^&*" for c in password):
-        score += 1
-    separator()
-    match score:
-        case 5:
-            print("Очень надёжный")
-        case 4:
-            print("Надёжный")
-        case 3:
-            print("Средний")
-        case 2:
-            print("Низкая надёжность")
-        case _:
-            print("Очень ненадёжный")
+    score = check_password_strength(password)
+
+    strength_levels = {
+        5: "Очень надёжный",
+        4: "Надёжный",
+        3: "Средний",
+        2: "Низкая надёжность"
+    }
+    print("=" * 50)
+    print(strength_levels.get(score, "Очень ненадёжный"))
 
 
 def main():
     """Главный цикл программы."""
     clear_console()
+    init_password_file()
+    cipher = get_cipher()
+
+    menu_actions = {
+        "1": lambda: action_save_password(cipher),
+        "2": lambda: action_update_password(cipher),
+        "3": action_delete_password,
+        "4": lambda: action_show_password(cipher),
+        "5": action_generate_password,
+        "6": action_check_strength,
+    }
+
     while True:
         print("Менеджер паролей")
-        separator()
+        print("=" * 50)
         print("0. Выйти")
         print("1. Сохранить пароль")
-        print("2. Удалить пароль")
-        print("3. Посмотреть пароли")
-        print("4. Сгенерировать пароль")
-        print("5. Проверить стойкость пароля")
-        separator()
+        print("2. Обновить пароль")
+        print("3. Удалить пароль")
+        print("4. Посмотреть пароли")
+        print("5. Сгенерировать пароль")
+        print("6. Проверить стойкость пароля")
+        print("=" * 50)
 
         choice = input("Выберите вариант: ")
 
-        match choice:
-            case "0":
-                break
-            case "1":
-                action_save_password()
-            case "2":
-                action_delete_password()
-            case "3":
-                action_show_password()
-            case "4":
-                action_generate_password()
-            case "5":
-                action_check_strength()
-            case _:
-                print("Неверный выбор")
+        if choice == "0":
+            break
+
+        action = menu_actions.get(choice)
+        if action:
+            action()
+        else:
+            print("Неверный выбор")
+
         wait_and_clear()
 
 
