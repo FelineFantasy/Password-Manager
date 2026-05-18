@@ -22,6 +22,7 @@ A secure console-based password manager with encryption, password generator, and
 - 🔒 **Encryption** — Passwords are stored in encrypted form
 - 🔑 **Key-based access** — A unique key is generated on first launch
 - 🗑️ **Delete password** — Remove stored passwords you no longer need
+- ✏️ **Update password** — Change existing passwords with ease
 - 🎲 **Password generator** — Create strong random passwords
 - 📊 **Strength checker** — Evaluate password reliability
 - 💾 **Local storage** — All data stays on your computer
@@ -61,6 +62,11 @@ python password_manager.py
 ### Save Password
 - Enter the app name and password
 - Password is encrypted and saved to `password.txt`
+
+### Update Password
+- Choose a saved service from the numbered list
+- View the old password before replacing it
+- Enter a new password manually or generate one automatically
 
 ### Delete Password
 - Enter the app name
