@@ -114,7 +114,5 @@ password-manager/
 - cryptography
 
 ## 👤 Author
-
-**FelineFantasy**
-
-License: MIT
+- **FelineFantasy**
+- **License**: MIT
