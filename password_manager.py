@@ -215,14 +215,23 @@ def action_generate_password():
 
 
 def check_password_strength(password):
-    """Проверяет надёжность пароля и возвращает оценку."""
+    """Проверяет надёжность пароля и возвращает оценку от 0 до 5."""
+    if not password:
+        return 0
+
+    unique_chars = len(set(password))
+
+    if len(password) >= 25 and unique_chars > 4:
+        return 5
+
     checks = [
         len(password) >= 8,
         any(c.isdigit() for c in password),
         any(c.isupper() for c in password),
         any(c.islower() for c in password),
-        any(c in "!@#$%^&*" for c in password)
+        any(c in "!@#$%^&*(),.<>/?;:'\"[{]}-_=+`~ " for c in password)
     ]
+    
     return sum(checks)
 
 
