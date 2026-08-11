@@ -94,8 +94,9 @@ Analyzes password based on 5 criteria:
 password-manager/
 ├── password_manager.py     # Main program file
 ├── requirements.txt        # Dependencies
-├── password.txt            # Encrypted passwords (auto-created)
-├── secret.key              # Encryption key (auto-created)
+├── .gitignore              # Git ignore file
+├── password.txt            # Encrypted passwords (auto-created) - игнорируется
+├── secret.key              # Encryption key (auto-created) - игнорируется
 └── README.md               # Documentation
 ```
 
