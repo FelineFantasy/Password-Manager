@@ -5,15 +5,6 @@
 
 A secure console-based password manager with encryption, password generator, and strength checker.
 
-## 📋 Table of Contents
-- [Description](#description)
-- [How to Use](#how-to-use)
-- [Installation](#installation)
-- [Features](#features)
-- [Security](#security)
-- [Project Files](#project-files)
-- [Author](#author)
-
 ## 📝 Description
 
 **Password Manager** is a console utility for securely storing your passwords. All passwords are encrypted using **Fernet (cryptography library)** and stored locally. The program also includes a password generator and a strength checker.
