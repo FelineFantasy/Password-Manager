@@ -107,6 +107,19 @@ password-manager/
 - Python 3.8+
 - cryptography
 
+## 💖 Support the Project
+
+If you find **Password Manager** useful and want to support its development, you can do so here:
+
+[![DonationAlerts](https://img.shields.io/badge/DonationAlerts-Support-blue.svg)](https://www.donationalerts.com/r/felinefantasy)
+
+Your support helps me:
+- 🔒 Improve security and add new features
+- 🐱 Develop more open-source tools
+- ☕ Stay awake while coding at 4 AM
+
+Every little bit is appreciated! ❤️
+
 ## 👤 Author
 - **FelineFantasy**
 - **License**: MIT
