@@ -92,12 +92,14 @@ Analyzes password based on 5 criteria:
 ## 📁 Project Files
 ```text
 password-manager/
-├── password_manager.py     # Main program file
-├── requirements.txt        # Dependencies
-├── .gitignore              # Git ignore file
-├── password.txt            # Encrypted passwords (auto-created) - игнорируется
-├── secret.key              # Encryption key (auto-created) - игнорируется
-└── README.md               # Documentation
+├── .github/
+│   └── FUNDING.yml          # Funding / donation configuration
+├── password_manager.py      # Main program file
+├── requirements.txt         # Dependencies
+├── .gitignore               # Git ignore file
+├── password.txt             # Encrypted passwords (auto-created) - ignored
+├── secret.key               # Encryption key (auto-created) - ignored
+└── README.md                # Documentation
 ```
 
 ## 📋 Requirements
