@@ -42,7 +42,7 @@ A secure console-based password manager with encryption, password generator, and
 
 ### Option 2: Clone repository
 ```bash
-git clone https://github.com/FelineFantasy/password-manager.git
+git clone https://github.com/FelineFantasy/password-manager
 cd password-manager
 pip install -r requirements.txt
 python password_manager.py
