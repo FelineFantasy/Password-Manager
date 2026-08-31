@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""
+Password Manager - secure encrypted password storage with Fernet
+"""
+
 import random
 import string
 import os
